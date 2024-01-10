@@ -1,8 +1,12 @@
+%Clear Memory
+clear all;
+
 %Import image
 file = uigetfile('*.*');
 raw_img = load(file);
 norm_img = mat2gray(raw_img);
 variableName = 'BW';
+filename = file
 
 %Call Adaptive Image Segmenter
 imageSegmenter(norm_img);
@@ -59,3 +63,5 @@ if clickedComponentIndex > 0
 else
     disp('No region selected.');
 end
+%%
+imwrite(selectedRegionImage,'ROI.tif')
