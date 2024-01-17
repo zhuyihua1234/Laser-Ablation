@@ -1,12 +1,16 @@
 %Clear Memory
 clear all;
 
+%Import Dark Corner Correction Map
+load('C:\Research\UCSF\GitHub_Repositories\Laser Ablation\dark_corner_correction.mat');
+
 %Import image
 file = uigetfile('*.*');
 raw_img = load(file);
-norm_img = mat2gray(raw_img);
+gray_img = mat2gray(raw_img);
+corr_img = gray_img + comp_img;
+norm_img = mat2gray(corr_img);
 variableName = 'BW';
-filename = file
 
 %Call Adaptive Image Segmenter
 imageSegmenter(norm_img);

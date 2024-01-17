@@ -1,8 +1,13 @@
+%Import Dark Corner Correction Map
+load('C:\Research\UCSF\GitHub_Repositories\Laser Ablation\dark_corner_correction.mat');
+
 %Import image
 file = uigetfile('*.*');
 raw_img = load(file);
-img_16 = fliplr(raw_img);
-grayImage = double(img_16);
+norm_img = mat2gray(raw_img);
+corr_img = norm_img + comp_img;
+grayImage = mat2gray(corr_img);
+
 selectedVariable = 'R'
 %%
 % Calculate the means for both lesion and sound
