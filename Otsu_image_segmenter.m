@@ -22,7 +22,9 @@ end
 
 %%
 imageSegmenter close
+
 % Display the binary mask image
+figure;
 imshow(BW);
 title('Binary Mask');
 
@@ -32,40 +34,64 @@ cc = bwconncomp(BW);
 % Get properties of all connected components
 props = regionprops(cc, 'all');
 
-% Prompt the user to click on a region
-disp('Click on a region to select it.');
-[x, y] = ginput(1); % Wait for user input
+% Prompt the user to click on regions
+disp('Click on regions to select them. Press "return" to finish.');
 
-% Convert clicked (x, y) coordinates to (row, column) format
-clickedRow = round(y);
-clickedColumn = round(x);
+% Initialize an array to store selected regions
+selectedRegions = [];
 
-% Find the component index corresponding to the clicked pixel
-clickedComponentIndex = 0;
+while true
+    [x, y] = ginput(1); % Wait for user input
+    
+    % Check if the user pressed "return"
+    if isempty(x)
+        break; % Exit the loop if "return" is pressed
+    end
+    
+    % Convert clicked (x, y) coordinates to (row, column) format
+    clickedRow = round(y);
+    clickedColumn = round(x);
+    
+    % Find the component index corresponding to the clicked pixel
+    clickedComponentIndex = 0;
 
-for i = 1:cc.NumObjects
-    % Check if the clicked coordinates fall within the region's PixelIdxList
-    if ismember(sub2ind(size(BW), clickedRow, clickedColumn), cc.PixelIdxList{i})
-        clickedComponentIndex = i;
-        break;
+    for i = 1:cc.NumObjects
+        % Check if the clicked coordinates fall within the region's PixelIdxList
+        if ismember(sub2ind(size(BW), clickedRow, clickedColumn), cc.PixelIdxList{i})
+            clickedComponentIndex = i;
+            break;
+        end
+    end
+
+    % Check if a valid region was clicked
+    if clickedComponentIndex > 0
+        selectedRegion = props(clickedComponentIndex);
+        selectedRegions = [selectedRegions; selectedRegion];
+        disp('Selected region properties have been added to the list.');
+        
+        % Display the selected region using its bounding box
+        selectedRegionImage = false(size(BW));
+        selectedRegionImage(cc.PixelIdxList{clickedComponentIndex}) = true;
+        
+        hold on;
+        plot(selectedRegion.BoundingBox(1), selectedRegion.BoundingBox(2), 'ro');
+        hold off;
+    else
+        disp('No region selected.');
     end
 end
 
-% Check if a valid region was clicked
-if clickedComponentIndex > 0
-    selectedRegion = props(clickedComponentIndex);
-    assignin('base', 'selectedRegion', selectedRegion);
-    disp('Selected region properties have been loaded into the workspace.');
-    
-    % Display the selected region using its bounding box
-    selectedRegionImage = false(size(BW));
-    selectedRegionImage(cc.PixelIdxList{clickedComponentIndex}) = true;
-    
-    figure;
-    imshow(selectedRegionImage);
-    title('Selected Region');
-else
-    disp('No region selected.');
+% Display the final segmentation with all selected regions
+disp('Displaying the final segmentation.');
+finalSegmentation = false(size(BW));
+for i = 1:size(selectedRegions, 1)
+    selectedRegionIndices = cat(1, selectedRegions.PixelIdxList);
+    finalSegmentation(selectedRegionIndices) = true;
 end
+
+figure;
+imshow(finalSegmentation);
+title('Final Segmentation');
+
 %%
 imwrite(selectedRegionImage,'ROI.tif')
