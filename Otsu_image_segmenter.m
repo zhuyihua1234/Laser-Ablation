@@ -8,10 +8,11 @@ load('C:\Research\UCSF\GitHub_Repositories\Laser Ablation\dark_corner_correction
 file = uigetfile('*.*');
 raw_img = load(file);
 gray_img = mat2gray(raw_img);
-corr_img = gray_img + comp_img;
+corr_img = gray_img + 0.1*comp_img;
 norm_img = mat2gray(corr_img);
 variableName = 'BW';
 
+%%
 %Call Adaptive Image Segmenter
 imageSegmenter(norm_img);
 
@@ -20,8 +21,11 @@ while ~exist(variableName, 'var')
     pause(1); % Adjust the pause duration as needed
 end
 
-%%
 imageSegmenter close
+
+%%
+% Shift Segmentation to correct image
+BW = imtranslate(BW,[-7.0554,-4.2666]);
 
 % Display the binary mask image
 figure;
@@ -92,6 +96,5 @@ end
 figure;
 imshow(finalSegmentation);
 title('Final Segmentation');
-
 %%
-imwrite(selectedRegionImage,'ROI.tif')
+dlmwrite('ROI',finalSegmentation,'delimiter','	')
